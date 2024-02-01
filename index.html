@@ -1,0 +1,233 @@
+<html>
+    <canvas id="TILE" width="1500" height="900"></canvas>
+    <script src="tile.js"></script>
+    
+    <script>
+        var g_canvas=document.getElementById("TILE");
+        var g_context=g_canvas.getContext("2d");
+        var FrameRate=30;
+        var TimeInterval=1000/FrameRate;
+        var g_tempswapvalue=0;
+        var count=0;
+        var g_tile_rows=3;
+        var g_tile_columns=3;
+        var g_tile_x=550;
+        var g_tile_y=300;
+		 var hour =00;
+    var minute =00;
+    var seconds =00;
+    var framecount = 0;
+		var strhour = ""; 
+        var strminute = "";
+        var strseconds = "";
+		var movesused=0;
+        var g_InputValue = ['D','A','C',' ','B','F','G','E','H'];
+        var g_ResultValue = ['A','B','C','D','E','F','G','H',' '];
+        
+        var g_tile_value=1;
+        var tile_objArray=new Array(g_tile_rows * g_tile_columns);
+        var arr_len=tile_objArray.length;
+		
+        
+        var a = setInterval(f_Gameloop,TimeInterval);
+        
+        function f_Gameloop() 
+		{
+			f_Start_Time();
+            f_clearcanvas();
+            f_draw();
+			f_Start_Time_Draw();
+			f_moveused_Draw();
+			
+             if (f_check()) //after completing game
+			{
+                g_context.font="30px Arial";
+					g_context.fillStyle="#000000"
+					g_context.fillText("YOU WON",710,270);
+				   
+				   clearTimeout(a);
+				
+                
+            }
+            
+            
+        }
+        
+        f_creatingTile();
+		
+        function f_creatingTile()
+		{
+			
+				
+            for(var i=0 ; i < g_tile_rows ; i++) 
+			{   
+                g_tile_x=650;
+                for(var j=0 ; j<g_tile_columns;j++) 
+				{
+                    tile_objArray[count]=new c_tile(g_tile_x, g_tile_y,  g_InputValue[count]);
+                    count++;
+                    g_tile_x+=100;
+                }  
+                g_tile_y+=100; 
+            }
+				
+        }
+		
+	
+        
+        function f_draw() 
+		{
+            for(var i=0;i<arr_len;i+=1) 
+			{
+                tile_objArray[i].m_draw_tile(g_context);
+            }
+        }
+		
+		function f_Start_Time()
+        {
+                    framecount++;
+        if(framecount==30)
+            {
+                seconds++;
+                framecount =0;
+            }
+        if(seconds==60)
+            {
+                minute++;
+                seconds =0;
+            }
+        if(minute==60)
+            {
+                hour++;
+                minute =0;
+                seconds=0;
+            }
+        
+        
+              
+            
+        }
+        
+        function f_Start_Time_Draw()
+        {
+            g_context.font="30px Arial";
+            g_context.fillText(" TIME = "+hour+":"+minute+":"+seconds,450,200);
+			g_context.fillText("PRESS 'MOUSE RIGHT CLICK' TO MOVE TILES",50,100);
+        }
+		function f_moveused_Draw()
+        {
+            g_context.font="30px Arial";
+            g_context.fillText(" MOVES = "+movesused,950,200);
+        }
+  
+        
+        function f_clearcanvas() 
+		{
+            g_context.clearRect(0,0,g_canvas.width,g_canvas.height);
+            g_context.strokeRect(0,0,g_canvas.width,g_canvas.height);
+			g_context.fillStyle="#b6efd9";
+			g_context.fillRect(0,0,g_canvas.width,g_canvas.height)
+        }
+
+        function f_swapvalue(l_Indx_1, l_Indx_2) //swapping tiles
+		{
+            console.log(l_Indx_1 + "_" + l_Indx_2);
+            g_tempswapvalue = tile_objArray[l_Indx_1].TILE_VALUE;
+            tile_objArray[l_Indx_1].TILE_VALUE = tile_objArray[l_Indx_2].TILE_VALUE;
+            tile_objArray[l_Indx_2].TILE_VALUE = g_tempswapvalue;
+			
+			
+        }
+
+        function f_check() //checking tile whether there is empty tile beside it
+		{
+            for (var i = 0; i < arr_len; i++) 
+			{
+                if (tile_objArray[i].TILE_VALUE !== g_ResultValue[i]) 
+				{
+                    return false;
+                }
+            }
+			
+            return true; 
+			
+        }
+
+        function onMouseDown(l_event)
+		
+		{  
+			//mose right click
+			
+            var mouseX = l_event.clientX - g_canvas.getBoundingClientRect().left;
+            var mouseY = l_event.clientY - g_canvas.getBoundingClientRect().top;
+			
+			movesused++;//counting how many moves we used
+
+            for (var i = 0; i < arr_len; i++) 
+			{
+                if (mouseX >= tile_objArray[i].TILE_X && mouseX <= (tile_objArray[i].TILE_X + tile_objArray[i].TILE_SIZE) &&
+                    mouseY >= tile_objArray[i].TILE_Y && mouseY <= (tile_objArray[i].TILE_Y + tile_objArray[i].TILE_SIZE)) 
+				{
+                    var l_ClickedTileIndx = i;
+                    var l_up = i - g_tile_columns;
+                    var l_down = i + g_tile_rows;
+                    var l_right = i + 1;
+                    var l_left = i - 1;
+                    if (l_up < 0) 
+					{
+                        l_up = null;
+                    }
+                    if (l_down > ((g_tile_rows * g_tile_columns) - 1)) 
+					{
+                        l_down = null;
+                    }
+                    if (i % g_tile_columns == 0) 
+					{
+                        l_left = null;
+                    }
+                    if ((i + 1) % g_tile_columns == 0) 
+					{
+                        l_right = null;
+                    }
+
+                    console.log("left=" + l_left + "" + "right=" + l_right + "" + "down=" + l_down + "" + "up=" + l_up);
+
+                    if (l_left != null) 
+					{
+                        if (tile_objArray[l_left].TILE_VALUE == " ") 
+						{
+                            f_swapvalue(l_ClickedTileIndx, l_left);
+                            return;
+                        }
+                    }
+                    if (l_right != null) 
+					{
+                        if (tile_objArray[l_right].TILE_VALUE == " ") 
+						{
+                            f_swapvalue(l_ClickedTileIndx, l_right);
+                            return;
+                        }
+                    }
+                    if (l_up != null) 
+					{
+                        if (tile_objArray[l_up].TILE_VALUE == " ") 
+						{
+                            f_swapvalue(l_ClickedTileIndx, l_up);
+                            return;
+                        }
+                    }
+                    if (l_down != null) 
+					{
+                        console.log(">>>>");
+                        if (tile_objArray[l_down].TILE_VALUE == " ") 
+						{
+                            f_swapvalue(l_ClickedTileIndx, l_down);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        window.addEventListener('mousedown', onMouseDown);
+    </script></html>
